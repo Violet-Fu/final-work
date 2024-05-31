@@ -10,7 +10,7 @@ Click the "Play or Stop" button in the upper left corner, wait for the music to 
 
 2. Which properties of the image will be animated and how; highlighting how it is unique from other group members (i.e. one changes colours, the other component sizes, another reveals only some components at a time, etc.). You will need to work with your group members to make sure your work is sufficiently different from each other.
 
-   The size, color, and shape of the pattern are used to create animation effects
+   I change the size, color, and shape of the rectangles to create animation effects while playing music.
 
 3. References to inspiration for animating your individual code; these can be images (still or gifs). How did they influence your submission?
 
@@ -20,4 +20,4 @@ Click the "Play or Stop" button in the upper left corner, wait for the music to 
 
    1. First obtain the amplitude object  of the music through p5.Amplitude(), and at the same time obtain the amplitude through amp.getLevel()
     2. Secondly, use the amplitude calculation to obtain the effective range (square range) and element scaling size.
-    3. Finally, for each sub-element object, determine whether the object is within the effective range. If it is within the effective range, update the attribute values ​​(size, shape, random color) of the object. If it is a square, turn it into a circle.
+    3. Finally, for each sub-element object, determine whether the object is within the animation range. If it is within the animation range, update the attribute values ​​(size, shape, random color) of the object. If it is a square, turn it into a circle.
