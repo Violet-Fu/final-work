@@ -1,3 +1,4 @@
+// findex: parents number
 let parents = [
   { findex: 0, x: 0, y: 0.02, height: 0.02, width: 1, color: "#fdeb19" },
   { findex: 1, x: 0, y: 0.15, height: 0.02, width: 1, color: "#fdeb19" },
@@ -376,35 +377,89 @@ let children = [
 ];
 let width, height;
 let canvas;
+let song, amp;
+let button;
+let rP, rC;
+
+// Load song
+function preload() {
+  song = loadSound(
+    "assets/Foxes_in_Fiction_Ontario_Gothic.mp3"
+  );
+}
+
 class myPattern {
-  constructor(x, y, width, height, color) {
+  constructor(findex, x, y, width, height, color) {
+    this.findex = findex;
     // (x,y) coordinate and myPattern's width and height and color
-    this.x = x;
-    this.y = y;
+    this.x = x + width / 2;
+    this.y = y + height / 2;
+    this.originX = this.x;
+    this.originY = this.y;
     this.width = width;
     this.height = height;
+    this.originWidth = width;
+    this.originHeight = height;
     this.color = color;
+    this.originColor = color;
+    this.isPlay = false;
   }
   show() {
+    push();
     stroke(0);
     strokeWeight(0.1);
     fill(this.color);
-    rect(this.x, this.y, this.width, this.height);
+    if (this.isPlay && this.width == this.height) {
+      ellipse(this.x, this.y, this.width, this.height);
+    } else {
+      rect(this.x, this.y, this.width, this.height);
+    }
+    pop();
+  }
+  update(sizeFactor, radiusFactor) {
+    if (this.checkArea(this.x, this.y, width / 2, height / 2, radiusFactor)) {
+      this.isPlay = true;
+      this.width = this.originWidth * sizeFactor;
+      this.height = this.originHeight * sizeFactor;
+      if (frameCount % 10 == 0) {
+        this.color = [random(255), random(255), random(255)];
+      }
+    } else {
+      this.isPlay = false;
+      this.width = this.originWidth;
+      this.height = this.originHeight;
+      this.x = this.originX;
+      this.y = this.originY;
+    }
+  }
+  // Determine if it is in the amplitude effect area
+  checkArea(x, y, centerX, centerY, radiusFactor) {
+    let halfSide = (width / 2) * radiusFactor;
+    return (
+      x >= centerX - halfSide &&
+      x <= centerX + halfSide &&
+      y >= centerX - halfSide &&
+      y <= centerX + halfSide
+    );
   }
 }
 function setup() {
   // Calculate the width and height after scaling before drawing
   height = windowHeight - 20;
   width = height;
+  rP = [];
+  rC = [];
   canvas = createCanvas(width, height);
   canvas.position((windowWidth - width) / 2, (windowHeight - height) / 2);
   canvas.style("border", "0.1px solid black");
-  background("#fffdf1");
+  background(255, 182, 193);
   noStroke();
-
+  rectMode(CENTER);
+  amp = new p5.Amplitude();
   // Iterate through the rows_and_columns array and create myPattern instances
   for (let i = 0; i < parents.length; i++) {
     let pattern1 = new myPattern(
+      parents[i].findex,
       parents[i].x * width,
       parents[i].y * height,
       parents[i].width * width,
@@ -412,9 +467,11 @@ function setup() {
       parents[i].color
     );
     pattern1.show();
+    rP.push(pattern1);
     for (let j = 0; j < children.length; j++) {
       if (children[j].findex == parents[i].findex) {
         let pattern2 = new myPattern(
+          children[j].findex,
           children[j].x * width,
           children[j].y * height,
           children[j].width * width,
@@ -422,11 +479,53 @@ function setup() {
           children[j].color
         );
         pattern2.show();
+        rC.push(pattern2);
+      }
+    }
+  }
+  // If the button already exists, remove it to prevent duplicate button generation
+  if (button) {
+    button.remove();
+  }
+  button = createButton("Play or Stop");
+  button.mousePressed(playOrStop);
+  // Setting the button style
+  button.style("background", "#f5c3d2");
+  button.style("font-size", `${height / 50}px`);
+  button.position(windowWidth / 2 - 20, (windowHeight - height) / 2 - 10);
+}
+function draw() {
+  clear();
+  background(245, 195, 210);
+  let level = amp.getLevel();
+  let sizeFactor; // myPattern size scaling factor
+  let radiusFactor; // Amplitude effect coverage factor
+  if (song.isPlaying()) {
+    sizeFactor = map(level, 0, 0.5, 0.25, 2);
+    radiusFactor = map(level, 0, 0.5, 0.5, 1);
+  } else {
+    sizeFactor = 1;
+    radiusFactor = 0;
+  }
+
+  for (let rp of rP) {
+    rp.show();
+    for (let rc of rC) {
+      if (rc.findex == rp.findex) {
+        rc.update(sizeFactor, radiusFactor);
+        rc.show();
       }
     }
   }
 }
-function draw() {}
+
+function playOrStop() {
+  if (song.isPlaying()) {
+    song.stop();
+  } else {
+    song.play();
+  }
+}
 
 // Define the windowResized function to handle window resizing events
 function windowResized() {
